@@ -1,0 +1,17 @@
+# Company-ready demo polish
+- [ ] Add shared task assignments with separate intern progress; preserve legacy tasks and verify admin/intern access.
+- [x] Verify real intern registration, pending Admin Panel request, admin approval, password login without email link, rejection, live-session data/RPC denial and direct protected URL blocking.
+- [ ] Stop signup confirmation emails globally. Blocker: configuration tool reports success but live mailer_autoconfirm remains false; owner must enable Auto-confirm email in More → Users → Auth settings → Email → Email confirmation. Admin approval now confirms accounts without email action.
+- [x] Recover missing intern approval requests on verified login through the existing request_intern_access function; never grant a role or navigate to protected intern pages while pending.
+- [x] Investigate Admin Login rejection: hosted email sign-in is enabled, current authentication has zero accounts and zero role rows, and the original sign-in handler is unchanged by the redesign. Trim email whitespace and distinguish service/network failures from credential rejections; 14 tests and simulated browser error flows pass.
+- [x] Refine the PeoplePlace login page with an intern-first centered form and discreet admin entry; verify desktop/mobile controls and role protection with tests, without changing authentication or database settings.
+- [x] Merge Team and Interns into a searchable, role/status-filtered member directory while preserving member and account actions.
+- [x] Preserve member performance and add related attendance, leave and goals to unified profiles; redirect old URLs.
+- [x] Unify login with role selection and account-role mismatch feedback without changing authentication adapters.
+- [ ] Verify authenticated member filters, profiles and actual login submissions. Blocker: current authentication has zero accounts; an authorized Admin account must be restored or provisioned with its role before real-account verification. No accounts or configuration were changed.
+- [x] Inspect existing dashboards, reporting, task details and shared controls.
+- [x] Improve accurate dashboard summaries, workload visibility and linked deadlines.
+- [x] Improve report periods and task-detail review using existing data.
+- [x] Fix confirmed shared mobile, accessibility and feedback issues.
+- [x] Test affected admin flows and document limitations without database changes.
+- [ ] Verify intern-only flows with an existing intern account. Blocker: current authentication has zero accounts; an existing Intern account is required. Do not create or alter accounts for testing.
