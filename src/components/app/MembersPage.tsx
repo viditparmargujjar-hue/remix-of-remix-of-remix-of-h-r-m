@@ -199,6 +199,6 @@ export function MembersPage() {
     <MemberForm open={form.open} member={form.member} onOpenChange={(open) => setForm((s) => ({ ...s, open }))} />
     <CreateDialog open={create.open} member={create.member} onOpenChange={(open) => setCreate((s) => ({ ...s, open }))} />
     <ResetDialog member={reset} onOpenChange={(open) => { if (!open) setReset(null); }} />
-    <ConfirmDialog open={!!del} onOpenChange={(open) => { if (!open) setDel(null); }} title="Remove member?" description={`${del?.name}'s profile${del?.user_id ? " and intern login" : ""} will be removed. Their tasks become unassigned.`} onConfirm={() => { if (!del) return; if (del.user_id && roleOf(del) === "intern") run(removeIntern({ data: { memberId: del.id } }), "Intern removed"); else if (!del.user_id) removeMember.mutate(del.id); setDel(null); }} confirmLabel="Remove" />
+    <ConfirmDialog open={!!del} onOpenChange={(open) => { if (!open) setDel(null); }} title="Remove intern?" description={`${del?.name}'s profile${del?.user_id ? " and intern login" : ""} will be removed. Their tasks become unassigned.`} onConfirm={() => { if (!del) return; if (del.user_id && roleOf(del) === "intern") run(removeIntern({ data: { memberId: del.id } }), "Intern removed"); else if (!del.user_id) removeMember.mutate(del.id); setDel(null); }} confirmLabel="Remove" />
   </div>;
 }
