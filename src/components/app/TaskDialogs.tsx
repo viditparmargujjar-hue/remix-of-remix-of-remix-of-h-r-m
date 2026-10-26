@@ -30,6 +30,7 @@ export function TaskFormDialog({ open, onOpenChange, task }: { open: boolean; on
   const create = useCreateTask();
   const update = useUpdateTask();
   const [f, setF] = useState<TaskInput>(empty);
+  const [who, setWho] = useState("");
   const prof = useAdminProfile();
   const [errors, setErrors] = useState<Partial<Record<"title" | "assigned_to" | "priority" | "due_date", string>>>({});
 
@@ -76,9 +77,10 @@ export function TaskFormDialog({ open, onOpenChange, task }: { open: boolean; on
             <Textarea id="desc" rows={3} value={f.description ?? ""} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="What needs to be done?" />
           </div>
           <div className="space-y-1.5">
-            <Label>Assign to *</Label>
+            <Label>Assign to interns * <span className="font-normal text-muted-foreground">({f.assignee_ids?.length ?? 0} selected)</span></Label>
+            <Input aria-label="Search interns" placeholder="Search interns…" value={who} onChange={(e) => setWho(e.target.value)} />
             <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3" role="group" aria-label="Assign to interns">
-              {members.filter((m) => m.is_active || f.assignee_ids?.includes(m.id)).map((m) => <label key={m.id} className="flex items-center gap-3 text-sm">
+              {members.filter((m) => (m.is_active || f.assignee_ids?.includes(m.id)) && (!who || m.name.toLowerCase().includes(who.toLowerCase()))).map((m) => <label key={m.id} className="flex items-center gap-3 text-sm">
                 <Checkbox checked={f.assignee_ids?.includes(m.id) ?? false} onCheckedChange={(checked) => {
                   const ids = checked ? [...(f.assignee_ids ?? []), m.id] : (f.assignee_ids ?? []).filter((id) => id !== m.id);
                   setF({ ...f, assignee_ids: ids, assigned_to: ids[0] ?? null });
