@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Loader2, Plus, Power, Search, Trash2, UserPlus, Wand2, Pencil } from "lucide-react";
+import { KeyRound, Loader2, Power, Search, Trash2, UserPlus, Wand2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -168,7 +168,7 @@ export function MembersPage() {
     catch (e) { toast.error((e as Error).message); }
   }
   return <div>
-    <PageHeader title="Interns" subtitle={`${members.length} interns · ${members.filter((m) => m.user_id).length} with a login`} action={<div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setForm({ open: true, member: null })}><Plus className="size-4" />Add Intern record</Button><Button onClick={() => setCreate({ open: true, member: null })}><UserPlus className="size-4" />Add Intern</Button></div>} />
+    <PageHeader title="Interns" subtitle={`${members.length} interns · ${members.filter((m) => m.user_id).length} with a login`} action={<div className="flex flex-wrap gap-2"><Button onClick={() => setCreate({ open: true, member: null })}><UserPlus className="size-4" />Add Intern</Button></div>} />
     <div className="mb-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_160px_160px]">
       <div className="relative"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label="Search interns" placeholder="Search name, email, job role or department…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" /></div>
       <Select value={role} onValueChange={setRole}><SelectTrigger aria-label="Filter account role"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All roles</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="intern">Intern</SelectItem><SelectItem value="no_login">No login</SelectItem></SelectContent></Select>

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate, useMyMember } from "@/lib/data";
 import { MemberAvatar, PageHeader } from "@/components/app/bits";
+import { ThemeSelect, imageToDataUrl } from "@/components/app/TopBar";
 
 export const Route = createFileRoute("/_intern/intern/profile")({
   head: () => ({
@@ -35,7 +36,7 @@ function Profile() {
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (avatar && !/^https?:\/\//.test(avatar)) return toast.error("Photo must be a link starting with http");
+    if (avatar && !/^(https?:\/\/|data:image\/)/.test(avatar)) return toast.error("Upload a valid image");
     if (phone && !/^[+\d\s()-]{6,20}$/.test(phone)) return toast.error("Enter a valid phone number");
     setBusy(true);
     const { error } = await (supabase as any).rpc("update_my_profile", { _phone: phone, _avatar: avatar });
@@ -57,10 +58,17 @@ function Profile() {
         <form onSubmit={save} className="mt-6 space-y-4 border-t pt-6">
           <p className="text-sm text-muted-foreground">You can update your phone and photo. Ask your admin to change anything else.</p>
           <div className="space-y-1.5"><Label htmlFor="ph">Phone</Label><Input id="ph" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" /></div>
-          <div className="space-y-1.5"><Label htmlFor="av">Profile photo URL</Label><Input id="av" value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://…" /></div>
+          <div className="space-y-1.5"><Label>Profile photo</Label>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" asChild><label className="cursor-pointer">Upload image<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ""; if (file) imageToDataUrl(file).then(setAvatar).catch((er) => toast.error(er.message)); }} /></label></Button>
+              {avatar && <Button type="button" variant="ghost" onClick={() => setAvatar("")}>Remove</Button>}
+            </div>
+            <p className="text-xs text-muted-foreground">PNG, JPG, WEBP or GIF, up to 5 MB. Click Save to keep it.</p>
+          </div>
           <Button type="submit" disabled={busy}>{busy && <Loader2 className="size-4 animate-spin" />}Save</Button>
         </form>
       </div>
+      <div className="card-soft mt-6 space-y-2 p-6"><Label htmlFor="th" className="font-bold">Theme</Label><ThemeSelect id="th" /></div>
     </div>
   );
 }
