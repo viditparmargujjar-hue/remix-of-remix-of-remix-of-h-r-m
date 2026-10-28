@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Loader2, Plus, Power, Search, Trash2, UserPlus, Wand2, Pencil } from "lucide-react";
+import { KeyRound, Loader2, Power, Search, Trash2, UserPlus, Wand2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
