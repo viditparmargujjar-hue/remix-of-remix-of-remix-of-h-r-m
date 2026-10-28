@@ -11,21 +11,59 @@ import { NotificationBell } from "./NotificationBell";
 import { StatusBadge } from "./bits";
 
 const THEME_KEY = "tm-theme";
-export function useTheme(fallback: "light" | "dark" = "light") {
-  const [theme, setTheme] = useState<"light" | "dark">(fallback);
+export type ThemePref = "light" | "dark" | "system";
+const THEME_EVT = "tm-theme-change";
+const resolve = (p: ThemePref) => (p === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : p);
+export function applyTheme(p: ThemePref, persist = true) {
+  document.documentElement.classList.toggle("dark", resolve(p) === "dark");
+  if (persist) {
+    localStorage.setItem(THEME_KEY, p);
+    window.dispatchEvent(new Event(THEME_EVT));
+    void (supabase as any).from("settings").upsert({ key: "theme", value: p }, { onConflict: "user_id,key" });
+  }
+}
+export function useTheme() {
+  const [pref, setPref] = useState<ThemePref>("light");
   useEffect(() => {
-    const saved = localStorage.getItem(THEME_KEY) as "light" | "dark" | null;
-    setTheme(saved ?? fallback);
-  }, [fallback]);
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
-  const toggle = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    localStorage.setItem(THEME_KEY, next);
-    setTheme(next);
-  };
-  return { theme, toggle };
+    const sync = () => { const p = (localStorage.getItem(THEME_KEY) as ThemePref | null) ?? "light"; setPref(p); applyTheme(p, false); };
+    sync();
+    (supabase as any).from("settings").select("value").eq("key", "theme").maybeSingle().then(({ data }: any) => {
+      if (data?.value && data.value !== localStorage.getItem(THEME_KEY)) { localStorage.setItem(THEME_KEY, data.value); sync(); }
+    });
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    window.addEventListener(THEME_EVT, sync); mq.addEventListener("change", sync);
+    return () => { window.removeEventListener(THEME_EVT, sync); mq.removeEventListener("change", sync); };
+  }, []);
+  const theme = typeof window === "undefined" ? "light" : resolve(pref);
+  const set = (p: ThemePref) => applyTheme(p);
+  const toggle = () => set(theme === "dark" ? "light" : "dark");
+  return { theme, pref, set, toggle };
+}
+
+export function ThemeSelect({ id }: { id?: string }) {
+  const { pref, set } = useTheme();
+  return (
+    <select id={id} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground" value={pref} onChange={(e) => set(e.target.value as ThemePref)}>
+      <option value="light">Light</option><option value="dark">Dark</option><option value="system">System</option>
+    </select>
+  );
+}
+
+/** Resize an image file to a small data URL (stored in existing profile fields). */
+export function imageToDataUrl(file: File, max = 256): Promise<string> {
+  return new Promise((res, rej) => {
+    if (!/^image\/(png|jpe?g|webp|gif)$/.test(file.type)) return rej(new Error("Choose a PNG, JPG, WEBP or GIF image"));
+    if (file.size > 5_000_000) return rej(new Error("Image must be under 5 MB"));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas"); const k = Math.min(1, max / Math.max(img.width, img.height));
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src); res(c.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => rej(new Error("Could not read this image"));
+    img.src = URL.createObjectURL(file);
+  });
 }
 
 function greeting() {
