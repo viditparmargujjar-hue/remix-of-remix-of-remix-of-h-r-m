@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminProfileQuery, type AdminProfile } from "@/lib/profile";
 import { PageHeader } from "@/components/app/bits";
+import { ThemeSelect, imageToDataUrl } from "@/components/app/TopBar";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -33,11 +34,6 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (data) setF(data); }, [data]);
 
-  useEffect(() => {
-    if (!f) return;
-    document.documentElement.classList.toggle("dark", f.theme === "dark");
-    localStorage.setItem("tm-theme", f.theme);
-  }, [f?.theme]);
 
   function pickLogo(file?: File) {
     if (!file) return;
@@ -95,7 +91,11 @@ function SettingsPage() {
           <h2 className="font-bold">Profile</h2>
           <div className="flex items-center gap-4">
             {f.avatar ? <img src={f.avatar} alt="" className="size-16 rounded-full object-cover" /> : <div className="grid size-16 place-items-center rounded-full bg-brand-gradient text-lg font-bold text-primary-foreground">{f.name.slice(0, 2).toUpperCase()}</div>}
-            <div className="flex-1 space-y-1.5"><Label htmlFor="av">Avatar image URL</Label><Input id="av" value={f.avatar} onChange={(e) => setF({ ...f, avatar: e.target.value })} placeholder="https://…" /></div>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" asChild><label className="cursor-pointer">Upload image<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ""; if (file) imageToDataUrl(file).then((url) => setF((p) => (p ? { ...p, avatar: url } : p))).catch((er) => toast.error(er.message)); }} /></label></Button>
+              {f.avatar && <Button type="button" variant="ghost" onClick={() => setF({ ...f, avatar: "" })}>Remove</Button>}
+              <p className="w-full text-xs text-muted-foreground">PNG, JPG, WEBP or GIF, up to 5 MB. Click Save changes to keep it.</p>
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5"><Label htmlFor="nm">Display name</Label><Input id="nm" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
@@ -107,8 +107,10 @@ function SettingsPage() {
           <label className="flex items-center justify-between gap-4"><span><span className="block text-sm font-medium">Email updates</span><span className="text-xs text-muted-foreground">Get notified when task status changes.</span></span><Switch checked={f.notifyEmail} onCheckedChange={(v) => setF({ ...f, notifyEmail: v })} /></label>
           <label className="flex items-center justify-between gap-4"><span><span className="block text-sm font-medium">Deadline reminders</span><span className="text-xs text-muted-foreground">Remind me about tasks due soon.</span></span><Switch checked={f.notifyDue} onCheckedChange={(v) => setF({ ...f, notifyDue: v })} /></label>
         </section>
-        <section className="card-soft p-6">
-          <label className="flex items-center justify-between gap-4"><span><span className="block font-bold">Dark theme</span><span className="text-xs text-muted-foreground">Switch the panel to a darker look.</span></span><Switch checked={f.theme === "dark"} onCheckedChange={(v) => setF({ ...f, theme: v ? "dark" : "light" })} /></label>
+        <section className="card-soft space-y-2 p-6">
+          <Label htmlFor="th" className="font-bold">Theme</Label>
+          <p className="text-xs text-muted-foreground">Applies immediately and is saved to your account.</p>
+          <ThemeSelect id="th" />
         </section>
         <Button type="submit" disabled={saving}>{saving && <Loader2 className="size-4 animate-spin" />}Save changes</Button>
       </form>
